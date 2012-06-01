@@ -432,10 +432,30 @@ class FWPKeywordFilters {
 		if ($word=='-') :
 			$label = "Posts where no keywords appear";
 			$wordType = 'hidden';
+
+			// No split necessary.
+			$wordPrefix = '';
 		else :
 			$label = "Posts containing";
 			$wordType = 'text';
+
+			// Split into field::match pattern
+			$wordParts = array_reverse(explode('::', $word, 2));
+			$word = $wordParts[0];
+			$wordPrefix = (isset($wordParts[1]) ? $wordParts[1] : 'text');
 		endif;
+
+		$psel = array();
+		$prefixes = array('text', 'category');
+		foreach ($prefixes as $p) :
+			if ($wordPrefix==$p) :
+				$psel[$p] = ' selected="selected"';
+			else :
+				$psel[$p] = '';
+			endif;
+		endforeach;		
+
+		// Split up the action into verb and (possibly) parameter
 		$bits = explode(":", $action, 2);
 		$verb = $bits[0];
 		
@@ -461,7 +481,17 @@ class FWPKeywordFilters {
 		name="feedwordpress_keyword_filters_keyword[<?php print $i; ?>]"
 		value="<?php print $word; ?>"
 		placeholder="keyword" size="8" /></label>
-		
+
+		<?php if ('hidden'==$wordType) : ?>
+		<input type="hidden" name="feedwordpress_keyword_filters_prefix[<?php print $i; ?>]" value="" />
+		<?php else : ?>
+		<label>in their
+		<select size="1" name="feedwordpress_keyword_filters_prefix[<?php print $i; ?>]">
+		  <option value="text"<?php print $psel['text']; ?>>text</option>
+		  <option value="category"<?php print $psel['category']; ?>>categories</option>
+		</select></label>
+		<?php endif; ?>
+
 		<label>get <select class="feedwordpress-keyword-filters-action"
 		id="keyword-filters-action-<?php print $i; ?>"
 		name="feedwordpress_keyword_filters_action[<?php print $i; ?>]"
@@ -529,6 +559,12 @@ class FWPKeywordFilters {
 		$keys = array();
 		foreach ($post['feedwordpress_keyword_filters_keyword'] as $i => $word) :
 			$word = trim($word);
+			if (isset($post['feedwordpress_keyword_filters_prefix'])
+			and isset($post['feedwordpress_keyword_filters_prefix'][$i])
+			and strlen($post['feedwordpress_keyword_filters_prefix'][$i]) > 0) :
+				$word = $post['feedwordpress_keyword_filters_prefix'][$i] . '::' . $word;
+			endif;
+
 			if (strlen($word) > 0) :
 				if (isset($post['feedwordpress_keyword_filters_action'][$i])) :
 					$action = trim($post['feedwordpress_keyword_filters_action'][$i]);
