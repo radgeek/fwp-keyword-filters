@@ -31,11 +31,12 @@ class fwpkfMatchablePost {
 	var $post;
 	var $texts;
 	var $cats;
+	var $matches;
 
 	function __construct ($post) {
 		// Keep for reference
 		$this->post = $post;
-	
+		$this->matches = 0;
 		$this->texts = NULL;
 		$this->cats = NULL;
 	}
@@ -110,6 +111,8 @@ class FWPKeywordFilters {
 	}
 	
 	function syndicated_item ($item, $obj) {
+		$mp = new fwpkfMatchablePost($obj);
+
 		$localKeys = maybe_unserialize($obj->link->setting(
 			'keyword filters', NULL,
 			array()
@@ -134,20 +137,20 @@ class FWPKeywordFilters {
 			endif;
 		endforeach;
 		
-		$this->matches = 0;
 		$this->filtered = NULL;
 		$this->terms = array(
 			'category' => array(),
 			'post_tag' => array(),
 		);
+
 		foreach ($keys as $word => $action) :
 			if ($word != '-') :
-				$this->processRule($word, $action, $obj);
+				$this->processRule($word, $action, $mp);
 			endif;
 		endforeach;
 		
 		if (isset($keys['-'])) :
-			$this->processRule('-', $keys['-'], $obj);
+			$this->processRule('-', $keys['-'], $mp);
 		endif;
 		
 		if ($this->filtered) :
@@ -220,7 +223,7 @@ class FWPKeywordFilters {
 		endforeach;
 		
 		if ($matched) :
-			$this->matches = $this->matches + 1;
+			$mp->matches = $mp->matches + 1;
 
 			FeedWordPress::diagnostic(
 			'keyword_filters:match',
