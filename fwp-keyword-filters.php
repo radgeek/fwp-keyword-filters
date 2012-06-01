@@ -3,7 +3,7 @@
 Plugin Name: FWP+: Keyword Filters
 Plugin URI: http://feedwordpress.radgeek.com/
 Description: simple and flexible keyword filtering for FeedWordPress syndicated posts
-Version: 2012.0531
+Version: 2012.0601
 Author: Charles Johnson
 Author URI: http://radgeek.com/
 License: GPL
@@ -41,22 +41,29 @@ class fwpkfMatchablePost {
 		$this->cats = NULL;
 	}
 
+	function compile_patterns ($regex) {
+		$pattern = $regex['pattern'];
+		$mods = $regex['mods'];
+
+		// Make use of our standard regex representation
+		return "\007${pattern}\007${mods}";
+	}
+
 	function match ($patterns, $mFields) {
 		// Prefix to restrict possible methods
-		$mFields .= 'fields_'.$mFields;
+		$mFields = 'fields_'.$mFields;
 
 		// Let's get the text or the categories to match against.
 		$fields = (is_callable(array($this, $mFields)) ? $this->{$mFields}() : array());
 
+		$regexen = array_map(array($this, 'compile_patterns'), $patterns);
+
 		// Determine whether we can match ALL the patterns
 		$matched = true;
-		foreach ($patterns as $regex) :
-			$pattern = $regex['pattern'];
-			$mods = $regex['mods'];
-			
+		foreach ($regexen as $regex) :
 			$matchedHere = false;
 			foreach ($fields as $scan) :
-				if (preg_match("\007${pattern}\007${mods}", $scan)) :
+				if (preg_match($regex, $scan)) :
 					$matchedHere = true;
 					break;
 				endif;
@@ -78,7 +85,7 @@ class fwpkfMatchablePost {
 		return $this->texts;
 	}
 
-	function fields_categories () {
+	function fields_category () {
 		if (is_null($this->cats)) :
 			$this->cats = array();
 			$post_cats = $this->post->entry->get_categories();
@@ -203,7 +210,7 @@ class FWPKeywordFilters {
 				$patterns = array(array(
 					"pattern" => '^\s*'.preg_replace(
 						"/\s+/",
-						"\\s+"
+						"\\s+",
 						preg_quote(
 							strtolower(trim($ref[2]))
 						)
