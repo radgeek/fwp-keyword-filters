@@ -1,11 +1,5 @@
 FWP+: Keyword Filters
 =====================
-Contributors: Charles Johnson
-Donate link: http://feedwordpress.radgeek.com/donate/
-Tags: feedwordpress, syndication, aggregation, feed, atom, rss
-Requires at least: 3.0
-Tested up to: 3.3.2
-
 FWP+: Keyword Filters is an add-on module that adds simple filtering abilities
 for the FeedWordPress feed aggregator on WordPress weblogs.
 
@@ -14,7 +8,10 @@ Description
 
 * Author: [Charles Johnson](http://radgeek.com/contact)
 * Project URI: <https://github.com/radgeek/fwp-keyword-filters>
+* Donate link: <http://feedwordpress.radgeek.com/donate/>
 * License: GPL 2. See License below for copyright jots and tittles.
+* Requires at least: WordPress 3.0
+* Tested up to: WordPress 3.3.2
 
 FWP+: Keyword Filters works together with the FeedWordPress feed aggregator plugin
 for WordPress weblogs. With the Keyword Filters module activated, you can set up
