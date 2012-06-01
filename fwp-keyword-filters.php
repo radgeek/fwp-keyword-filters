@@ -108,8 +108,9 @@ class FWPKeywordFilters {
 		
 		$this->name = strtolower(get_class($this));
 		
-		// Set up functionality
-		add_filter('syndicated_item', array(&$this, 'syndicated_item'), 1000, 2);
+		// Set up functionality. Future-proof for when syndicated_item becomes syndicated_entry
+		add_filter('syndicated_item', array(&$this, 'syndicated_entry'), 1000, 2);
+		add_filter('syndicated_entry', array(&$this, 'syndicated_entry'), 1000, 2);
 		add_filter('syndicated_post', array(&$this, 'syndicated_post'), 1000, 2);
 
 		// Set up configuration UI
@@ -143,7 +144,7 @@ class FWPKeywordFilters {
 		return $diag;
 	}
 	
-	function syndicated_item ($item, $obj) {
+	function syndicated_entry ($entry, $obj) {
 		$mp = new fwpkfMatchablePost($obj);
 
 		$localKeys = maybe_unserialize($obj->link->setting(
@@ -185,11 +186,11 @@ class FWPKeywordFilters {
 		if (isset($keys['-'])) :
 			$this->processRule('-', $keys['-'], $mp);
 		endif;
-		
+
 		if ($this->filtered) :
-			$item = NULL; // Filter it out.
+			$entry = NULL; // Filter it out.
 		endif;
-		return $item;
+		return $entry;
 	} /* FWPKeywordFilters::syndicated_item () */
 
 	function processRule ($word, $actions, $mp) {
@@ -267,6 +268,7 @@ class FWPKeywordFilters {
 		);
 
 		$matched = $mp->match($patterns, $comparisonFields);
+
 		if ($matched) :
 			$mp->matches = $mp->matches + 1;
 
