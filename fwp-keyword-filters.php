@@ -11,7 +11,7 @@ License: GPL
 
 /**
  * @package FWPKeywordFilters
- * @version 2010.1205
+ * @version 2012.0601
  */
 
 // Get the path relative to the plugins directory in which FWP is stored
