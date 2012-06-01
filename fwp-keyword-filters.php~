@@ -274,7 +274,7 @@ class FWPKeywordFilters {
 
 			FeedWordPress::diagnostic(
 			'keyword_filters:match',
-			'Matched item ['.esc_html($mp->post->guid()).'] against keyword "'.esc_html($word).'". Applying: '.esc_html(implode(",", $actions))
+			'Matched item ['.esc_html($obj->guid()).'] against keyword "'.esc_html($word).'". Applying: '.esc_html(implode(",", $actions))
 			);
 
 			foreach ($actions as $action) :
