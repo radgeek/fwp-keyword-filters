@@ -72,7 +72,7 @@ To search for a whole phrase, use a pattern like this one:
 
 You can use regular expression syntax for more complicated patterns:
 
-	/the \s+ (fat \s+)? cat \s+ sat \s+ (up)?on \s+ the [a-z]+/ix
+	/the \s+ (fat \s+)? cat \s+ sat \s+ (up)?on \s+ the \s+ [a-z]+/ix
 
 Will match "the fat cat sat on the mat", "The CAT sat upon the mat", "The FAT cAt
 sat upon the dais," and a number of other phrases.
