@@ -27,6 +27,43 @@ else : // Something went wrong. Let's just guess.
 	$fwpkf_path = 'fwp-keyword-filters';
 endif;
 
+class fwpkfMatchablePost {
+	var $post;
+	var $texts;
+	var $cats;
+
+	function __construct ($post) {
+		// Keep for reference
+		$this->post = $post;
+	
+		$this->texts = NULL;
+		$this->cats = NULL;
+	}
+
+	function text () {
+		if (is_null($this->texts)) :
+			$this->texts = array();
+			$this->texts[] = $this->post->entry->get_title();
+			$this->texts[] = strip_tags($this->post->entry->get_title());
+			$this->texts[] = $this->post->content();
+			$this->texts[] = strip_tags($this->post->content());
+		endif;
+		return $this->texts;
+	}
+
+	function categories () {
+		if (is_null($this->cats)) :
+			$this->cats = array();
+			$post_cats = $this->post->entry->get_categories();
+			foreach ($post_cats as $cat) :
+				$this->cats[] = $cat->get_label();
+				$this->cats[] = $cat->get_term();
+			endforeach;
+		endif;
+		return $this->cats;
+	}
+}
+
 class FWPKeywordFilters {
 	var $terms;
 	var $matches;
