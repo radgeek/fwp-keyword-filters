@@ -41,7 +41,33 @@ class fwpkfMatchablePost {
 		$this->cats = NULL;
 	}
 
-	function text () {
+	function match ($patterns, $mFields) {
+		// Prefix to restrict possible methods
+		$mFields .= 'fields_'.$mFields;
+
+		// Let's get the text or the categories to match against.
+		$fields = (is_callable(array($this, $mFields)) ? $this->{$mFields}() : array());
+
+		// Determine whether we can match ALL the patterns
+		$matched = true;
+		foreach ($patterns as $regex) :
+			$pattern = $regex['pattern'];
+			$mods = $regex['mods'];
+			
+			$matchedHere = false;
+			foreach ($fields as $scan) :
+				if (preg_match("\007${pattern}\007${mods}", $scan)) :
+					$matchedHere = true;
+					break;
+				endif;
+			endforeach;
+			$matched = ($matched AND $matchedHere);
+		endforeach;
+
+		return $matched;
+	}
+
+	function fields_text () {
 		if (is_null($this->texts)) :
 			$this->texts = array();
 			$this->texts[] = $this->post->entry->get_title();
@@ -52,7 +78,7 @@ class fwpkfMatchablePost {
 		return $this->texts;
 	}
 
-	function categories () {
+	function fields_categories () {
 		if (is_null($this->cats)) :
 			$this->cats = array();
 			$post_cats = $this->post->entry->get_categories();
@@ -159,69 +185,81 @@ class FWPKeywordFilters {
 		return $item;
 	} /* FWPKeywordFilters::syndicated_item () */
 
-	function processRule ($word, $actions, $obj) {
+	function processRule ($word, $actions, $mp) {
 		if ($word=='-') :
-			if ($this->matches > 0) :
+			if ($mp->matches > 0) :
 				$word = '/$^/'; // never matched
 			else :
 				$word = '/.*/'; // always matches
 			endif;
 		endif;
 		
-		if (preg_match("\007^\s*/(.*)/\s*([a-z]*)\s*\$\007i", $word, $ref)) :
-			$patterns = array(array(
-			"pattern" => $ref[1], "mods" => $ref[2]
-			));
-		else :
-			$words = preg_split('/\s+/', $word, -1, PREG_SPLIT_NO_EMPTY);
-			$patterns = array();
-			foreach ($words as $w) :
-				if (preg_match("\007^\s*/(.*)/\s*([a-z]*)\s*\$\007i", $w, $ref)) :
-					$patterns[] = array(
-					"pattern" => $ref[1],
-					"mods" => $ref[2],
-					);
-				else :
-					$patterns[] = array(
-					"pattern" => '\b'.preg_quote($w).'\b',
-					"mods" => 'i',
-					);
-				endif;
-			endforeach;
+		$comparisonFields = 'text'; $patterns = NULL;
+		if (preg_match("\007^(category|text)::(.*)$\007", $word, $ref)) :
+			$comparisonFields = $ref[1];
+			switch ($comparisonFields) :
+			case 'category' :
+				// Exact & complete matches only, but ignore case and space
+				$patterns = array(array(
+					"pattern" => '^\s*'.preg_replace(
+						"/\s+/",
+						"\\s+"
+						preg_quote(
+							strtolower(trim($ref[2]))
+						)
+					).'\s*$',
+					"mods" => "i",
+				));
+				break;
+			case 'text' :
+				$word = $ref[2];
+			default :
+				// Pass the buck down to the next if-then structure
+			endswitch;
 		endif;
-	
+
+		if (is_null($patterns)) :
+			if (preg_match("\007^\s*/(.*)/\s*([a-z]*)\s*\$\007i", $word, $ref)) :
+				// PCRE literal expression
+				$patterns = array(array(
+				"pattern" => $ref[1], "mods" => $ref[2]
+				));
+			else :
+				// List of keywords to search for.
+				$words = preg_split('/\s+/', $word, -1, PREG_SPLIT_NO_EMPTY);
+				$patterns = array();
+				foreach ($words as $w) :
+					if (preg_match("\007^\s*/(.*)/\s*([a-z]*)\s*\$\007i", $w, $ref)) :
+						$patterns[] = array(
+						"pattern" => $ref[1],
+						"mods" => $ref[2],
+						);
+					else :
+						$patterns[] = array(
+						"pattern" => '\b'.preg_quote($w).'\b',
+						"mods" => 'i',
+						);
+					endif;
+				endforeach;
+			endif;
+		endif;
+
 		$diagRegexes = array();
 		foreach ($patterns as $regex) :
 			$diagRegexes[] = '/'.$regex['pattern'].'/'.$regex['mods'];
 		endforeach;
+
+		$iGuid = esc_html($mp->post->guid());
+		$iWord = esc_html($word);
+		$iRegexes = esc_html(implode(' + ', $diagRegexes));
+		$iMethod = esc_html($comparisonFields);
+
 		FeedWordPress::diagnostic(
 			'keyword_filters:scan',
-			'Scanning item ['.esc_html($obj->guid()).'] for keyword "'.esc_html($word).'" (PCRE: '.esc_html(implode(' + ', $diagRegexes)).')'
+			"Scanning item [${iGuid}] for $iMethod keyword $iWord (PCRE: ${iRegexes})"
 		);
 
-		// We check the title and the content both. 
-		$fields = array();
-		$fields[] = $obj->entry->get_title();
-		$fields[] = strip_tags($obj->entry->get_title());
-		$fields[] = $obj->content();
-		$fields[] = strip_tags($obj->content());
-		
-		// Determine whether we can matches ALL the patterns
-		$matched = true;
-		foreach ($patterns as $regex) :
-			$pattern = $regex['pattern'];
-			$mods = $regex['mods'];
-			
-			$matchedHere = false;
-			foreach ($fields as $scan) :
-				if (preg_match("\007${pattern}\007${mods}", $scan)) :
-					$matchedHere = true;
-					break;
-				endif;
-			endforeach;
-			$matched = ($matched AND $matchedHere);
-		endforeach;
-		
+		$matched = $mp->match($patterns, $comparisonFields);
 		if ($matched) :
 			$mp->matches = $mp->matches + 1;
 
