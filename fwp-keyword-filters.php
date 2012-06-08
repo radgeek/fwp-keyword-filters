@@ -89,10 +89,15 @@ class fwpkfMatchablePost {
 		if (is_null($this->cats)) :
 			$this->cats = array();
 			$post_cats = $this->post->entry->get_categories();
-			foreach ($post_cats as $cat) :
-				$this->cats[] = $cat->get_label();
-				$this->cats[] = $cat->get_term();
-			endforeach;
+			
+			// If we have any categories, then loop through them to get both
+			// label and term.
+			if (is_array($post_cats)) :
+				foreach ($post_cats as $cat) :
+					$this->cats[] = $cat->get_label();
+					$this->cats[] = $cat->get_term();
+				endforeach;
+			endif;
 		endif;
 		return $this->cats;
 	}
