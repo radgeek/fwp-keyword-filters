@@ -2,7 +2,7 @@
 /*
 Plugin Name: FWP+: Keyword Filters
 Plugin URI: http://feedwordpress.radgeek.com/
-Description: simple and flexible keyword filtering for FeedWordPress syndicated posts
+Description: simple and flexible keyword or category filtering for FeedWordPress syndicated posts
 Version: 2012.0601
 Author: Charles Johnson
 Author URI: http://radgeek.com/
