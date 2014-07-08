@@ -3,7 +3,7 @@
 Plugin Name: FWP+: Keyword Filters
 Plugin URI: http://feedwordpress.radgeek.com/
 Description: simple and flexible keyword or category filtering for FeedWordPress syndicated posts
-Version: 2012.0601
+Version: 2014.0707
 Author: Charles Johnson
 Author URI: http://radgeek.com/
 License: GPL
@@ -77,8 +77,8 @@ class fwpkfMatchablePost {
 	function fields_text () {
 		if (is_null($this->texts)) :
 			$this->texts = array();
-			$this->texts[] = $this->post->entry->get_title();
-			$this->texts[] = strip_tags($this->post->entry->get_title());
+			$this->texts[] = $this->post->title();
+			$this->texts[] = strip_tags($this->post->title());
 			$this->texts[] = $this->post->content();
 			$this->texts[] = strip_tags($this->post->content());
 		endif;
@@ -88,7 +88,7 @@ class fwpkfMatchablePost {
 	function fields_category () {
 		if (is_null($this->cats)) :
 			$this->cats = array();
-			$post_cats = $this->post->entry->get_categories();
+			$post_cats = $this->post->get_categories();
 			
 			// If we have any categories, then loop through them to get both
 			// label and term.
@@ -148,7 +148,7 @@ class FWPKeywordFilters {
 		$diag['Syndicated Post Details']['keyword_filters:match'] = 'when posts are matched by keyword and actions are applied';
 		return $diag;
 	}
-	
+		
 	function syndicated_entry ($entry, $obj) {
 		$mp = new fwpkfMatchablePost($obj);
 
