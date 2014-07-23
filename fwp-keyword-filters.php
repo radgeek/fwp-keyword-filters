@@ -150,6 +150,17 @@ class FWPKeywordFilters {
 	}
 		
 	function syndicated_entry ($entry, $obj) {
+		if (apply_filters('fwp_keyword_filters_defer_processing', false, $entry, $obj)) :
+			// Maybe we could do something cool here like recording
+			// the exact data from off the feed, etc. But for now...
+			FeedWordPress::diagnostic(
+				'keyword_filters:scan',
+				"Deferring scan of item [${iGuid}] for keywords"
+			);
+
+			return $entry;
+		endif;
+		
 		$mp = new fwpkfMatchablePost($obj);
 
 		$localKeys = maybe_unserialize($obj->link->setting(
