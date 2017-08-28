@@ -3,8 +3,8 @@
 Plugin Name: FWP+: Keyword Filters
 Plugin URI: http://feedwordpress.radgeek.com/
 Description: simple and flexible keyword or category filtering for FeedWordPress syndicated posts
-Version: 2014.0707
-Author: Charles Johnson
+Version: 2017.0828
+Author: Charles Johnson, Sarah Julia Kriesch
 Author URI: http://radgeek.com/
 License: GPL
 */
@@ -110,7 +110,7 @@ class FWPKeywordFilters {
 	
 	function FWPKeywordFilters () {
 		global $fwpkf_path;
-		
+		if (!is_admin()) {
 		$this->name = strtolower(get_class($this));
 		
 		// Set up functionality. Future-proof for when syndicated_item becomes syndicated_entry
@@ -122,11 +122,12 @@ class FWPKeywordFilters {
 		add_action('feedwordpress_admin_page_posts_meta_boxes', array(&$this, 'add_settings_box'), 100, 1);
 		add_action('feedwordpress_admin_page_posts_save', array(&$this, 'save_settings'), 100, 2);
 		add_action('admin_print_scripts', array(&$this, 'admin_print_scripts'));
-		wp_register_script('fwp-keyword-filters', WP_PLUGIN_URL.'/'.$fwpkf_path.'/fwp-keyword-filters.js');
+		wp_enqueue_scripts('fwp-keyword-filters', WP_PLUGIN_URL.'/'.$fwpkf_path.'/fwp-keyword-filters.js');
 
 		// Set up diagnostics
 		add_filter('feedwordpress_diagnostics', array(&$this, 'diagnostics'), 10, 2);
 		add_filter('syndicated_feed_special_settings', array(&$this, 'special_settings'), 10, 2);
+		}
 	}
 
 	function special_settings ($settings, $source) {
