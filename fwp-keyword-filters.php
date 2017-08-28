@@ -123,6 +123,7 @@ class FWPKeywordFilters {
 		add_action('feedwordpress_admin_page_posts_save', array(&$this, 'save_settings'), 100, 2);
 		add_action('admin_print_scripts', array(&$this, 'admin_print_scripts'));
 		wp_register_script('fwp-keyword-filters', WP_PLUGIN_URL.'/'.$fwpkf_path.'/fwp-keyword-filters.js');
+		add_action('wp_enqueue_scripts', 'enqueue_scripts');
 
 		// Set up diagnostics
 		add_filter('feedwordpress_diagnostics', array(&$this, 'diagnostics'), 10, 2);
