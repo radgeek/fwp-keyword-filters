@@ -110,7 +110,7 @@ class FWPKeywordFilters {
 	
 	function FWPKeywordFilters () {
 		global $fwpkf_path;
-		
+		if (!is_admin()) {
 		$this->name = strtolower(get_class($this));
 		
 		// Set up functionality. Future-proof for when syndicated_item becomes syndicated_entry
@@ -128,6 +128,7 @@ class FWPKeywordFilters {
 		// Set up diagnostics
 		add_filter('feedwordpress_diagnostics', array(&$this, 'diagnostics'), 10, 2);
 		add_filter('syndicated_feed_special_settings', array(&$this, 'special_settings'), 10, 2);
+		}
 	}
 
 	function special_settings ($settings, $source) {
