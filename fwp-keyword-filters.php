@@ -14,6 +14,8 @@ License: GPL
  * @version 2017.1007
  */
 
+define('FWPKF_VERSION', '2017.1007');
+
 // Get the path relative to the plugins directory in which FWP is stored
 preg_match (
 	'|'.preg_quote(WP_PLUGIN_DIR).'/(.+)$|',
@@ -121,10 +123,7 @@ class FWPKeywordFilters {
 		// Set up configuration UI
 		add_action('feedwordpress_admin_page_posts_meta_boxes', array($this, 'add_settings_box'), 100, 1);
 		add_action('feedwordpress_admin_page_posts_save', array($this, 'save_settings'), 100, 2);
-		add_action('admin_print_scripts', array($this, 'admin_print_scripts'));
-
-		// THIS NEEDS TO BE FIXED IN AT LEAST TWO DIFFERENT WAYS: Use plugins_url(), use wp_enqueue_script() in place of wp_register_script()
-		wp_register_script('fwp-keyword-filters', WP_PLUGIN_URL.'/'.$fwpkf_path.'/fwp-keyword-filters.js');
+		add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
 
 		// Set up diagnostics
 		add_filter('feedwordpress_diagnostics', array($this, 'diagnostics'), 10, 2);
@@ -137,11 +136,16 @@ class FWPKeywordFilters {
 		));
 	} /* FWPKeywordFilters::special_settings () */
 
-	public function admin_print_scripts () {
+	public function admin_enqueue_scripts () {
+		wp_register_script(
+			/*$handle=*/ 'fwp-keyword-filters',
+			/*$src=*/ plugins_url('fwp-keyword-filters.js', __FILE__),
+			/*$deps=*/ array('jquery'),
+			/*$ver=*/ FWPKF_VERSION,
+			/*$in_footer=*/ false
+		);
 		wp_enqueue_script(
-			'fwp-keyword-filters',
-			NULL,
-			array('jquery')
+			/*$handle=*/ 'fwp-keyword-filters'
 		);
 	} /* FWPKeywordFilters::admin_print_scripts() */
 
