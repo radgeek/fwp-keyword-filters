@@ -3,7 +3,7 @@
 Plugin Name: FWP+: Keyword Filters
 Plugin URI: http://feedwordpress.radgeek.com/
 Description: simple and flexible keyword or category filtering for FeedWordPress syndicated posts
-Version: 2014.0707
+Version: 2017.1007
 Author: Charles Johnson
 Author URI: http://radgeek.com/
 License: GPL
@@ -11,7 +11,7 @@ License: GPL
 
 /**
  * @package FWPKeywordFilters
- * @version 2012.0601
+ * @version 2017.1007
  */
 
 // Get the path relative to the plugins directory in which FWP is stored
@@ -33,7 +33,7 @@ class fwpkfMatchablePost {
 	var $cats;
 	var $matches;
 
-	function __construct ($post) {
+	public function __construct ($post) {
 		// Keep for reference
 		$this->post = $post;
 		$this->matches = 0;
@@ -41,7 +41,7 @@ class fwpkfMatchablePost {
 		$this->cats = NULL;
 	}
 
-	function compile_patterns ($regex) {
+	public function compile_patterns ($regex) {
 		$pattern = $regex['pattern'];
 		$mods = $regex['mods'];
 
@@ -49,7 +49,7 @@ class fwpkfMatchablePost {
 		return "\007${pattern}\007${mods}";
 	}
 
-	function match ($patterns, $mFields) {
+	public function match ($patterns, $mFields) {
 		// Prefix to restrict possible methods
 		$mFields = 'fields_'.$mFields;
 
@@ -74,7 +74,7 @@ class fwpkfMatchablePost {
 		return $matched;
 	}
 
-	function fields_text () {
+	public function fields_text () {
 		if (is_null($this->texts)) :
 			$this->texts = array();
 			$this->texts[] = $this->post->title();
@@ -85,7 +85,7 @@ class fwpkfMatchablePost {
 		return $this->texts;
 	}
 
-	function fields_category () {
+	public function fields_category () {
 		if (is_null($this->cats)) :
 			$this->cats = array();
 			$post_cats = $this->post->get_categories();
@@ -108,48 +108,50 @@ class FWPKeywordFilters {
 	var $matches;
 	var $filtered;
 	
-	function FWPKeywordFilters () {
+	public function __construct () {
 		global $fwpkf_path;
 		
 		$this->name = strtolower(get_class($this));
 		
 		// Set up functionality. Future-proof for when syndicated_item becomes syndicated_entry
-		add_filter('syndicated_item', array(&$this, 'syndicated_entry'), 1000, 2);
-		add_filter('syndicated_entry', array(&$this, 'syndicated_entry'), 1000, 2);
-		add_filter('syndicated_post', array(&$this, 'syndicated_post'), 1000, 2);
+		add_filter('syndicated_item', array($this, 'syndicated_entry'), 1000, 2);
+		add_filter('syndicated_entry', array($this, 'syndicated_entry'), 1000, 2);
+		add_filter('syndicated_post', array($this, 'syndicated_post'), 1000, 2);
 
 		// Set up configuration UI
-		add_action('feedwordpress_admin_page_posts_meta_boxes', array(&$this, 'add_settings_box'), 100, 1);
-		add_action('feedwordpress_admin_page_posts_save', array(&$this, 'save_settings'), 100, 2);
-		add_action('admin_print_scripts', array(&$this, 'admin_print_scripts'));
+		add_action('feedwordpress_admin_page_posts_meta_boxes', array($this, 'add_settings_box'), 100, 1);
+		add_action('feedwordpress_admin_page_posts_save', array($this, 'save_settings'), 100, 2);
+		add_action('admin_print_scripts', array($this, 'admin_print_scripts'));
+
+		// THIS NEEDS TO BE FIXED IN AT LEAST TWO DIFFERENT WAYS: Use plugins_url(), use wp_enqueue_script() in place of wp_register_script()
 		wp_register_script('fwp-keyword-filters', WP_PLUGIN_URL.'/'.$fwpkf_path.'/fwp-keyword-filters.js');
 
 		// Set up diagnostics
-		add_filter('feedwordpress_diagnostics', array(&$this, 'diagnostics'), 10, 2);
-		add_filter('syndicated_feed_special_settings', array(&$this, 'special_settings'), 10, 2);
+		add_filter('feedwordpress_diagnostics', array($this, 'diagnostics'), 10, 2);
+		add_filter('syndicated_feed_special_settings', array($this, 'special_settings'), 10, 2);
 	}
 
-	function special_settings ($settings, $source) {
+	public function special_settings ($settings, $source) {
 		return array_merge($settings, array(
 		'keyword filters',
 		));
 	} /* FWPKeywordFilters::special_settings () */
 
-	function admin_print_scripts () {
+	public function admin_print_scripts () {
 		wp_enqueue_script(
 			'fwp-keyword-filters',
 			NULL,
 			array('jquery')
 		);
-	}
+	} /* FWPKeywordFilters::admin_print_scripts() */
 
-	function diagnostics ($diag, $page) {
+	public function diagnostics ($diag, $page) {
 		$diag['Syndicated Post Details']['keyword_filters:scan'] = 'as posts are scanned for keywords';
 		$diag['Syndicated Post Details']['keyword_filters:match'] = 'when posts are matched by keyword and actions are applied';
 		return $diag;
-	}
-		
-	function syndicated_entry ($entry, $obj) {
+	} /* FWPKeywordFilters::diagnostics() */
+
+	public function syndicated_entry ($entry, $obj) {
 		if (apply_filters('fwp_keyword_filters_defer_processing', false, $entry, $obj)) :
 			// Maybe we could do something cool here like recording
 			// the exact data from off the feed, etc. But for now...
@@ -209,7 +211,7 @@ class FWPKeywordFilters {
 		return $entry;
 	} /* FWPKeywordFilters::syndicated_item () */
 
-	function processRule ($word, $actions, $mp) {
+	public function processRule ($word, $actions, $mp) {
 		if ($word=='-') :
 			if ($mp->matches > 0) :
 				$word = '/$^/'; // never matched
@@ -316,7 +318,7 @@ class FWPKeywordFilters {
 		endif;
 	} /* FWPKeywordFilters::processRule () */
 
-	function syndicated_post ($post, $obj) {
+	public function syndicated_post ($post, $obj) {
 		if (!$this->filtered) :
 			foreach ($this->terms as $tax => $terms) :
 				if (!isset($post['tax_input'][$tax])) :
@@ -335,7 +337,7 @@ class FWPKeywordFilters {
 		return $post;
 	} /* FWPKeywordFilters::syndicated_post () */
 
-	function add_settings_box ($page) {
+	public function add_settings_box ($page) {
 		add_meta_box(
 			/*id=*/ "feedwordpress_{$this->name}_box",
 			/*title=*/ __('Keyword Filters'),
@@ -345,7 +347,7 @@ class FWPKeywordFilters {
 		);
 	} /* FWPKeywordFilters::add_settings_box () */
 	
-	function display_settings ($page, $box = NULL) {
+	public function display_settings ($page, $box = NULL) {
 		$keys = maybe_unserialize($page->setting("keyword filters", array(), array("fallback" => false)));
 		if ($page->for_feed_settings()) :
 			$globalKeys = maybe_unserialize(get_option('feedwordpress_keyword_filters', array()));
@@ -375,13 +377,13 @@ class FWPKeywordFilters {
 		<?php
 		foreach ($keys as $word => $actions) :
 			foreach ($actions as $action) :
-				$this->display_keyword_row($i, $word, $action, $page);
+				$i = $this->display_keyword_row($i, $word, $action, $page);
 			endforeach;
 		endforeach;
 		
 		// blank for new entry
 		$j = "new-1";
-		$this->display_keyword_row($j, '', '', $page);
+		$j = $this->display_keyword_row($j, '', '', $page);
 		?>
 		</td>
 		</tr>
@@ -389,12 +391,12 @@ class FWPKeywordFilters {
 		<tr><th>Default</th>
 		<td><?php
 		foreach ($ifNoneMatch as $action) :
-			$this->display_keyword_row($i, '-', $action, $page);
+			$i = $this->display_keyword_row($i, '-', $action, $page);
 		endforeach;
 		
 		// blank for new entry
 		$j = "new-2";
-		$this->display_keyword_row($j, '-', '', $page);
+		$j = $this->display_keyword_row($j, '-', '', $page);
 		?>
 
 		<input id="feedwordpress-keyword-filters-num"
@@ -444,7 +446,7 @@ class FWPKeywordFilters {
 		<?php
 	} /* FWPKeywordFilters::display_settings () */
 	
-	function display_keyword_row (&$i, $word, $action, $page) {
+	public function display_keyword_row ($i, $word, $action, $page) {
 		if ($word=='-') :
 			$label = "Posts where no keywords appear";
 			$wordType = 'hidden';
@@ -569,9 +571,11 @@ class FWPKeywordFilters {
 		if (is_numeric($i)) :
 			$i++;
 		endif;
-	}
+
+		return $i;
+	} /* FWPKeywordFilters::display_keyword_row () */
 	
-	function save_settings ($post, $page) {
+	public function save_settings ($post, $page) {
 		$keys = array();
 		foreach ($post['feedwordpress_keyword_filters_keyword'] as $i => $word) :
 			$word = trim($word);
@@ -605,7 +609,7 @@ class FWPKeywordFilters {
 		if ($page->for_feed_settings() and isset($post['add_global_keyword_filters'])) :
 			$page->update_setting('add/keyword_filters', $post['add_global_keyword_filters']);
 		endif;
-	}
+	} /* FWPKeywordFilters::save_settings () */
 } /* FWPKeywordFilters */
  
 $fwpKeywordFilters = new FWPKeywordFilters;
