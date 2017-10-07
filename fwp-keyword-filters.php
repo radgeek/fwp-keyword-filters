@@ -34,6 +34,8 @@ class fwpkfMatchablePost {
 	var $texts;
 	var $cats;
 	var $matches;
+	private $title;
+	private $author;
 
 	public function __construct ($post) {
 		// Keep for reference
@@ -102,6 +104,22 @@ class fwpkfMatchablePost {
 			endif;
 		endif;
 		return $this->cats;
+	}
+
+	public function fields_title () {
+		if (is_null($this->title)) :
+			$this->title = array();
+			$this->title[] = $this->post->title();
+			$this->title[] = strip_tags($this->post->title());
+		endif;
+		return $this->title;
+	}
+
+	public function fields_author () {
+		if (is_null($this->author)) :
+			$this->author = array_values($this->post->author());
+		endif;
+		return $this->author;
 	}
 }
 
@@ -225,9 +243,10 @@ class FWPKeywordFilters {
 		endif;
 		
 		$comparisonFields = 'text'; $patterns = NULL;
-		if (preg_match("\007^(category|text)::(.*)$\007", $word, $ref)) :
+		if (preg_match("\007^(category|text|author|title)::(.*)$\007", $word, $ref)) :
 			$comparisonFields = $ref[1];
 			switch ($comparisonFields) :
+			case 'author' :
 			case 'category' :
 				// Exact & complete matches only, but ignore case and space
 				$patterns = array(array(
@@ -241,6 +260,7 @@ class FWPKeywordFilters {
 					"mods" => "i",
 				));
 				break;
+			case 'title' :
 			case 'text' :
 				$word = $ref[2];
 			default :
@@ -468,7 +488,7 @@ class FWPKeywordFilters {
 		endif;
 
 		$psel = array();
-		$prefixes = array('text', 'category');
+		$prefixes = array('text', 'category', 'title', 'author');
 		foreach ($prefixes as $p) :
 			if ($wordPrefix==$p) :
 				$psel[$p] = ' selected="selected"';
@@ -511,6 +531,8 @@ class FWPKeywordFilters {
 		<select size="1" name="feedwordpress_keyword_filters_prefix[<?php print $i; ?>]">
 		  <option value="text"<?php print $psel['text']; ?>>text</option>
 		  <option value="category"<?php print $psel['category']; ?>>categories</option>
+		  <option value="title"<?php print $psel['title']; ?>>title</option>
+		  <option value="author"<?php print $psel['author']; ?>>author</option>
 		</select></label>
 		<?php endif; ?>
 
