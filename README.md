@@ -11,15 +11,15 @@ Description
 * Donate link: <http://feedwordpress.radgeek.com/donate/>
 * License: GPL 2. See License below for copyright jots and tittles.
 * Requires at least: WordPress 3.0
-* Tested up to: WordPress 3.4.2
+* Tested up to: WordPress 4.8.2
 
 FWP+: Keyword Filters works together with the FeedWordPress feed aggregator
 plugin for WordPress weblogs. With the Keyword Filters module activated, you can
 set up filtering rules that determine what to do with incoming posts based on
-the keywords found in the text of the post, or on the categories assigned to it
-on its original source. Filtering rules can be set up to apply to all of your
-subscriptions, or can be applied only to posts coming in from one particular
-feed.
+the keywords found in the text or title of the post, on the author's name or
+contract information, or on the categories assigned to it on its original source.
+Filtering rules can be set up to apply to all of your subscriptions, or can be
+applied only to posts coming in from one particular feed.
 
 Usage
 -----
@@ -59,17 +59,21 @@ the keyword box. Note that **category matches must be exact matches:** putting
 original source website, but not (e.g.) posts that had a category called "Stuff
 and Nonsense".
 
-**Searching for keywords in the post text:** To search for one or more keywords
-in the text of an incoming post, just type the keywords, one after another, into
-the "Posts containing [...]" box. This works roughly like a Google search:
-Keyword Filters will search for posts that contain *all* of those keywords, as
-complete words (so, for example, "cat dog" will search for posts that contain
-*both* the word "cat" by itself, and the word "dog" by itself; it will not match
-"categories" or "doggerel"). Keywords match regardless of uppercase or lowercase
-letters (so "cat" will match not only "cat," but also "CAT," "cAt," etc.). If
-you want to set up filters for posts that contain either "cat" or "dog" but not
-necessarily both, set up two separate keyword filtering rules, one for each
-term.
+**Searching for keywords in the post text or title:** To search for one or more
+keywords in the text or only the title of an incoming post, just type the
+keywords, one after another, into the "Posts containing [...]" box. This works
+roughly like a Google search: Keyword Filters will search for posts that contain
+*all* of those keywords, as complete words (so, for example, "cat dog" will search
+for posts or titles that contain *both* the word "cat" by itself, and the word "dog"
+by itself; it will not match "categories" or "doggerel"). Keywords match regardless
+of uppercase or lowercase letters (so "cat" will match not only "cat," but also
+"CAT," "cAt," etc.). If you want to set up filters for posts that contain either
+"cat" or "dog" but not necessarily both, set up two separate keyword filtering
+rules, one for each term.
+
+If you tell FWP+: Keyword Filters to search the text of a post for keywords, it
+will include both the post title and the post content. If you tell it to search
+the post title, it will search only the title, and disregard the post content.
 
 **Searching for regular expressions in the post text:** If you need more
 flexible searching, you can search incoming posts for a Perl-compatible regular
@@ -124,7 +128,7 @@ Here's what you do.
 
 License
 -------
-FWP+: Keyword Filters plugin is copyright © 2010-2012 by Charles Johnson.
+FWP+: Keyword Filters plugin is copyright © 2010-2017 by Charles Johnson.
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the [GNU General Public License][] as published by the Free
